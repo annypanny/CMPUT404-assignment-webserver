@@ -1,14 +1,17 @@
-#  coding: utf-8 
+#! /usr/bin/env python
+#  coding: utf-8
+#
 import SocketServer
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,12 +30,117 @@ import SocketServer
 # try: curl -v -X GET http://127.0.0.1:8080/
 
 
+# status code
+# https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+
+
 class MyWebServer(SocketServer.BaseRequestHandler):
-    
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
         self.request.sendall("OK")
+        # split date into a list
+        data_split = self.data.split()
+        # get command, uri and version from list
+        command = data_split[0]
+        uri = data_split[1]
+        version = data_split[2]
+        # find folder www's path
+        path_root = os.path.abspath("www")
+        print path_root
+
+        # only files in ./www and deeper to be served
+        if "../" in uri:
+            response = "HTTP/1.1 404 Not Found\r\n"
+            content = """\
+                    <!DOCTYPE html>
+                    <html>
+                    <body>
+                    <h1>HTTP/1.1 404 Not Found</h1>
+                    </body>
+                    </html>
+                    """
+            response += content + "\r\n\r\n"
+            self.request.sendall(response)
+
+        # add index.html at end
+        elif uri[-1] == "/":
+            uri = path_root + "index.html"
+
+        else:
+            uri += path_root
+
+
+
+
+        if (command == "GET"):
+            #self.get_cmd()
+            try:
+                f = open(uri)
+                fdata = f.read()
+
+                # check mime type HTML or CSS
+                if uri[-4:] == "html":
+                    mime = "text/html"
+                elif uri[-3:] == "css":
+                    mime = "text/css"
+
+                response = "HTTP/1.1 200 OK\r\n"
+                response += "Content-Length:"+ str(len(fdata)) +"\r\n"
+                reponse += "Content-Type:"+ mime +"\r\n"
+                        #'Connection: close'
+                content = """\
+                        <!DOCTYPE html>
+                        <html>
+                        <body>
+                        <h1>HTTP/1.1 200 OK</h1>
+                        </body>
+                        </html>
+                        """
+                response += content + "\r\n\r\n"
+                self.request.sendall(response)
+
+
+
+            except Exception as e:
+                response = "HTTP/1.1 404 Not Found\r\n"
+                content = """\
+                        <!DOCTYPE html>
+                        <html>
+                        <body>
+                        <h1>HTTP/1.1 404 Not Found</h1>
+                        </body>
+                        </html>
+                        """
+                response += content + "\r\n\r\n"
+                self.request.sendall(response)
+        else:
+            response = "HTTP/1.1 501 Not Implemented\r\n"
+            content = """\
+                    <!DOCTYPE html>
+                    <html>
+                    <body>
+                    <h1>HTTP/1.1 501 Not Implemented</h1>
+                    <p>The server does not support the functionality
+                    required to fulfill the request.
+                    Please use GET to request.</p>
+                    </body>
+                    </html>
+                    """
+            response += content + "\r\n\r\n"
+            self.request.sendall(response)
+
+
+'''
+    def get_cmd(self):
+        try:
+            pass
+        except Exception as e:
+            raise
+            '''
+
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
