@@ -47,8 +47,8 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         uri = data_split[1]
         version = data_split[2]
         # find folder www's path
+        path = os.path.abspath(uri)
         path_root = os.path.abspath("www")
-        print path_root
 
         # only files in ./www and deeper to be served
         if "../" in uri:
@@ -66,24 +66,24 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
         # add index.html at end
         elif uri[-1] == "/":
-            uri = path_root + "index.html"
+            path = os.path.abspath(path_root+path+ "/index.html")
 
         else:
-            uri += path_root
+            path += path_root
+
 
 
 
 
         if (command == "GET"):
-            #self.get_cmd()
             try:
-                f = open(uri)
+                f = open(path,'r')
                 fdata = f.read()
-
+                mime=""
                 # check mime type HTML or CSS
-                if uri[-4:] == "html":
+                if uri.split('.')[-1].lower() == "html":
                     mime = "text/html"
-                elif uri[-3:] == "css":
+                elif uri.split('.')[-1].lower()== "css":
                     mime = "text/css"
 
                 response = "HTTP/1.1 200 OK\r\n"
@@ -132,14 +132,6 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             self.request.sendall(response)
 
 
-'''
-    def get_cmd(self):
-        try:
-            pass
-        except Exception as e:
-            raise
-            '''
-
 
 
 if __name__ == "__main__":
@@ -148,6 +140,8 @@ if __name__ == "__main__":
     SocketServer.TCPServer.allow_reuse_address = True
     # Create the server, binding to localhost on port 8080
     server = SocketServer.TCPServer((HOST, PORT), MyWebServer)
+
+    #server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
