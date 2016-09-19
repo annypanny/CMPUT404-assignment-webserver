@@ -47,7 +47,8 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         uri = data_split[1]
         version = data_split[2]
         # find folder www's path
-        path = os.path.abspath(uri)
+        #path = os.path.abspath(uri)
+        path = ""
         path_root = os.path.abspath("www")
 
         # only files in ./www and deeper to be served
@@ -66,11 +67,13 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
         # add index.html at end
         elif uri[-1] == "/":
-            path = os.path.abspath(path_root+path+ "/index.html")
+            #path = os.path.abspath(path_root+path+ "/index.html")
+            path = path_root+uri+"/index.html"
             #print path
 
         else:
-            path += path_root
+            #path += path_root
+            path = path_root+uri
             #print path
 
 
