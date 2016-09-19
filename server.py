@@ -39,7 +39,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall("OK")
+        #self.request.sendall("OK")
         # split date into a list
         data_split = self.data.split()
         # get command, uri and version from list
@@ -67,9 +67,11 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         # add index.html at end
         elif uri[-1] == "/":
             path = os.path.abspath(path_root+path+ "/index.html")
+            #print path
 
         else:
             path += path_root
+            #print path
 
 
 
@@ -88,7 +90,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
 
                 response = "HTTP/1.1 200 OK\r\n"
                 response += "Content-Length:"+ str(len(fdata)) +"\r\n"
-                reponse += "Content-Type:"+ mime +"\r\n"
+                response += "Content-Type:"+ str(mime) +"\r\n"
                         #'Connection: close'
                 content = """\
                         <!DOCTYPE html>
@@ -100,6 +102,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
                         """
                 response += content + "\r\n\r\n"
                 self.request.sendall(response)
+                self.request.sendall(fdata)
 
 
 
