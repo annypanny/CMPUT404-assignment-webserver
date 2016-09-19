@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 #  coding: utf-8
 #
 import SocketServer
@@ -47,93 +46,83 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         uri = data_split[1]
         version = data_split[2]
         # find folder www's path
-        #path = os.path.abspath(uri)
         path = ""
         path_root = os.path.abspath("www")
 
         # only files in ./www and deeper to be served
         if "../" in uri:
             response = "HTTP/1.1 404 Not Found\r\n"
-            content = """\
-                    <!DOCTYPE html>
-                    <html>
-                    <body>
-                    <h1>HTTP/1.1 404 Not Found</h1>
-                    </body>
-                    </html>
-                    """
-            response += content + "\r\n\r\n"
+            #content = """\
+             #       <!DOCTYPE html>
+             #       <html>
+             #       <body>
+             #       <h1>HTTP/1.1 404 Not Found</h1>
+             #       </body>
+             #       </html>
+             #       """
+            # response += content + "\r\n\r\n"
             self.request.sendall(response)
-
         # add index.html at end
         elif uri[-1] == "/":
             #path = os.path.abspath(path_root+path+ "/index.html")
             path = path_root+uri+"/index.html"
-            #print path
-
         else:
-            #path += path_root
             path = path_root+uri
-            #print path
 
-
-
-
-
+        # get header and data when use GET
         if (command == "GET"):
             try:
                 f = open(path,'r')
                 fdata = f.read()
+
                 mime=""
                 # check mime type HTML or CSS
-                if uri.split('.')[-1].lower() == "html":
+                if path.split('.')[-1].lower() == "html":
                     mime = "text/html"
-                elif uri.split('.')[-1].lower()== "css":
+                elif path.split('.')[-1].lower()== "css":
                     mime = "text/css"
 
                 response = "HTTP/1.1 200 OK\r\n"
                 response += "Content-Length:"+ str(len(fdata)) +"\r\n"
                 response += "Content-Type:"+ str(mime) +"\r\n"
+                response += "Connection: Close" + "\r\n\r\n"
                         #'Connection: close'
-                content = """\
-                        <!DOCTYPE html>
-                        <html>
-                        <body>
-                        <h1>HTTP/1.1 200 OK</h1>
-                        </body>
-                        </html>
-                        """
-                response += content + "\r\n\r\n"
+                # content = """\
+                #         <!DOCTYPE html>
+                #         <html>
+                #         <body>
+                #         <h1>HTTP/1.1 200 OK</h1>
+                #         </body>
+                #         </html>
+                #         """
+                # response += content + "\r\n\r\n"
                 self.request.sendall(response)
-                self.request.sendall(fdata)
-
-
-
+                self.request.sendall(fdata+"\r\n")
             except Exception as e:
                 response = "HTTP/1.1 404 Not Found\r\n"
-                content = """\
-                        <!DOCTYPE html>
-                        <html>
-                        <body>
-                        <h1>HTTP/1.1 404 Not Found</h1>
-                        </body>
-                        </html>
-                        """
-                response += content + "\r\n\r\n"
+                #content = """\
+                #        <!DOCTYPE html>
+                #        <html>
+                #        <body>
+                #        <h1>HTTP/1.1 404 Not Found</h1>
+                #        </body>
+                #        </html>
+                #        """
+                #response += content + "\r\n\r\n"
                 self.request.sendall(response)
         else:
             response = "HTTP/1.1 501 Not Implemented\r\n"
-            content = """\
-                    <!DOCTYPE html>
-                    <html>
-                    <body>
-                    <h1>HTTP/1.1 501 Not Implemented</h1>
-                    <p>The server does not support the functionality
-                    required to fulfill the request.
-                    Please use GET to request.</p>
-                    </body>
-                    </html>
-                    """
+            #content = """\
+            #        <!DOCTYPE html>
+            #        <html>
+            #        <body>
+            #        <h1>HTTP/1.1 501 Not Implemented</h1>
+            #        <p>The server does not support the functionality
+            #        required to fulfill the request.
+            #        Please use GET to request.</p>
+            #        </body>
+            #        </html>
+            #        """
             response += content + "\r\n\r\n"
             self.request.sendall(response)
 
